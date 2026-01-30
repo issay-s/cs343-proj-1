@@ -479,9 +479,25 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+
+    """ Optimized speed with ChatGPT. Recommended using heuristicInfo to avoid
+    recomputing nodes. Original solution expanded 9000+ Nodes but looping through
+    the food list and returning the maxDist. """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodList = foodGrid.asList()
+
+    if not foodList:
+        return 0
+    
+    maxDist = 0
+    for food in foodList:
+        key = (position, food)
+        if key not in problem.heuristicInfo:
+            problem.heuristicInfo[key] = mazeDistance(position, food, problem.startingGameState)
+        maxDist = max(maxDist, problem.heuristicInfo[key])
+
+    return maxDist
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
