@@ -295,6 +295,8 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        # This was copied from chatGPT after pasting the problem description 
+        return (self.startingPosition, frozenset())
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -302,7 +304,9 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # This was copied from chatGPT after pasting the problem description 
+        _, visitedCorners = state
+        return len(visitedCorners) == 4
 
     def getSuccessors(self, state):
         """
@@ -314,19 +318,28 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-
         successors = []
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+        position, visitedCorners = state
+        x, y = position
 
-            "*** YOUR CODE HERE ***"
+        for action in [Directions.NORTH, Directions.SOUTH,
+                    Directions.EAST, Directions.WEST]:
 
-        self._expanded += 1 # DO NOT CHANGE
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+
+            if not self.walls[nextx][nexty]:
+                nextPosition = (nextx, nexty)
+
+                nextVisitedCorners = visitedCorners
+                if nextPosition in self.corners:
+                    nextVisitedCorners = visitedCorners | {nextPosition}
+
+                successors.append(
+                    ((nextPosition, nextVisitedCorners), action, 1)
+                )
+
+        self._expanded += 1
         return successors
 
     def getCostOfActions(self, actions):
@@ -342,25 +355,39 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
+def manhattanDistance(p1, p2):
+    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
 def cornersHeuristic(state, problem):
-    """
-    A heuristic for the CornersProblem that you defined.
+    position, visitedCorners = state
+    corners = problem.corners
 
-      state:   The current search state
-               (a data structure you chose in your search problem)
+    unvisited = [c for c in corners if c not in visitedCorners]
+    if not unvisited:
+        return 0
 
-      problem: The CornersProblem instance for this layout.
+    # Distance from current position to closest unvisited corner
+    min_to_corner = min(manhattanDistance(position, c) for c in unvisited)
 
-    This function should always return a number that is a lower bound on the
-    shortest path from the state to a goal of the problem; i.e.  it should be
-    admissible (as well as consistent).
-    """
-    corners = problem.corners # These are the corner coordinates
-    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    # MST cost over unvisited corners (Prim's algorithm)
+    mst_cost = 0
+    visited = [unvisited[0]]
+    remaining = unvisited[1:]
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    while remaining:
+        min_edge = float('inf')
+        next_corner = None
+        for v in visited:
+            for u in remaining:
+                d = manhattanDistance(v, u)
+                if d < min_edge:
+                    min_edge = d
+                    next_corner = u
+        mst_cost += min_edge
+        visited.append(next_corner)
+        remaining.remove(next_corner)
+
+    return min_to_corner + mst_cost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

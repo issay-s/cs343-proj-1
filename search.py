@@ -171,7 +171,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     visited = set()
     result = []
     start = problem.getStartState()
-    queue.push((start, []), searchAgents.manhattanHeuristic(start, problem))
+    queue.push((start, []), heuristic(start, problem))
 
     while not queue.isEmpty():
         curr, path = queue.pop()
@@ -184,7 +184,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             for state, action, _ in problem.getSuccessors(curr):
                 if state not in visited:
                     newPath = path + [action]
-                    queue.push((state, newPath), problem.getCostOfActions(newPath) + searchAgents.manhattanHeuristic(state, problem))
+                    queue.push((state, newPath), problem.getCostOfActions(newPath) + heuristic(state, problem))
 
     return result
 
