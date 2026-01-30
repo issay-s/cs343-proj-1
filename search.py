@@ -117,6 +117,7 @@ def breadthFirstSearch(problem):
 
     visited = set()
     result = []
+    queue = util.Queue()
     queue.push((problem.getStartState(), []))
 
     while not queue.isEmpty():
