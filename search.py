@@ -92,7 +92,9 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
 
-    # I COPIED AND PASTED THIS CODE FROM CHATGPT!!!!
+    # This was copy and pasted from Chatgpt after giving it my 
+    # initial draft along with the problem description and telling it
+    # to fix the code 
 
     visited = set()
     result = []
